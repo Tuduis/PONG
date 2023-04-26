@@ -44,6 +44,10 @@ const coerceIn = (value, min, max) => {
 	}
 };
 
+function isInBetween(value, min, max) {
+	return value >= min && value <= max;
+}
+
 ctx.font = '30px Arial';
 
 function drawPaddle(x, y) {
@@ -134,7 +138,81 @@ function movePaddles() {
 	}
 }
 
+function shouldBounceBallFromTopWall() {
+	return ballY < BALL_R && ballDY < 0;
+}
+
+function shouldBounceBallFromBottomWall() {
+	return ballY + BALL_R > CANVAS_HEIGHT && ballDY > 0;
+}
+
+function moveBallByStep() {
+	ballX += ballDX;
+	ballY += ballDY;
+}
+
+function bounceBallFromWall() {
+	ballDY = -ballDY;
+}
+
+function bounceBallFromPaddle() {
+	ballDX = -ballDX;
+}
+
+function moveBallToStart() {
+	ballX = BALL_START_X;
+	ballY = BALL_START_Y;
+}
+
+function ballIsOutsideOnLeft() {
+	return ballX + BALL_R < 0;
+}
+
+function ballIsOutsideOnRight() {
+	return ballX - BALL_R > CANVAS_WIDTH;
+}
+
+function isBallOnTheSameHeightAsPaddle(paddleY) {
+	return isInBetween(ballY, paddleY, paddleY + PADDLE_HEIGHT);
+}
+
+function shouldBounceFromLeftPaddle() {
+	return (
+		ballDX < 0 &&
+		isInBetween(ballX - BALL_R, PADDLE_P1_X, PADDLE_P1_X + PADDLE_WIDTH) &&
+		isBallOnTheSameHeightAsPaddle(p1PaddleY)
+	);
+}
+
+function shouldBounceFromRightPaddle() {
+	return (
+		ballDX > 0 &&
+		isInBetween(ballX + BALL_R, PADDLE_P2_X, PADDLE_P2_X + PADDLE_WIDTH) &&
+		isBallOnTheSameHeightAsPaddle(p2PaddleY)
+	);
+}
+
+function moveBall() {
+	if (shouldBounceBallFromTopWall() || shouldBounceBallFromBottomWall()) {
+		bounceBallFromWall();
+	}
+	if (shouldBounceFromLeftPaddle() || shouldBounceFromRightPaddle()) {
+		bounceBallFromPaddle();
+	}
+
+	if (ballIsOutsideOnLeft()) {
+		moveBallToStart();
+		p2Points++;
+	} else if (ballIsOutsideOnRight()) {
+		moveBallToStart();
+		p1Points++;
+	}
+
+	moveBallByStep();
+}
+
 const updateState = () => {
+	moveBall();
 	movePaddles();
 };
 
