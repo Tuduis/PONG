@@ -115,75 +115,86 @@ const ball = {
 	y: BALL_START_Y,
 	dx: BALL_START_DX,
 	dy: BALL_START_DY,
-	moveByStep: function() {
+	moveByStep: function () {
 		this.x += this.dx;
 		this.y += this.dy;
 	},
-	shouldBounceFromTopWall: function() {
+	shouldBounceFromTopWall: function () {
 		return this.y < BALL_R && this.dy < 0;
 	},
-	shouldBounceFromBottomWall: function() {
+	shouldBounceFromBottomWall: function () {
 		return this.y + BALL_R > CANVAS_HEIGHT && this.dy > 0;
 	},
-	bounceFromWall: function() {
+	bounceFromWall: function () {
 		this.dy = -this.dy;
 	},
-	bounceFromPaddle: function() {
+	bounceFromPaddle: function () {
 		this.dx = -this.dx;
 	},
-	moveToStart: function() {
+	moveToStart: function () {
 		this.x = BALL_START_X;
 		this.y = BALL_START_Y;
 	},
-	isOutsideOnLeft: function() {
+	isOutsideOnLeft: function () {
 		return this.x + BALL_R < 0;
 	},
-	isOutsideOnRight: function() {
+	isOutsideOnRight: function () {
 		return this.x - BALL_R > CANVAS_WIDTH;
 	},
-	isOnTheSameHeightAsPaddle:function(paddleY) {
+	isOnTheSameHeightAsPaddle: function (paddleY) {
 		return isInBetween(this.y, paddleY, paddleY + PADDLE_HEIGHT);
 	},
-	shouldBounceFromLeftPaddle: function() {
+	shouldBounceFromLeftPaddle: function () {
 		return (
 			this.dx < 0 &&
 			isInBetween(this.x - BALL_R, PADDLE_P1_X, PADDLE_P1_X + PADDLE_WIDTH) &&
 			this.isBallOnTheSameHeightAsPaddle(p1PaddleY)
 		);
 	},
-	shouldBounceFromRightPaddle: function() {
+	shouldBounceFromRightPaddle: function () {
 		return (
 			this.dx > 0 &&
 			isInBetween(this.x + BALL_R, PADDLE_P2_X, PADDLE_P2_X + PADDLE_WIDTH) &&
 			this.isBallOnTheSameHeightAsPaddle(p2PaddleY)
 		);
-	}
+	},
 };
 
-let p1PaddleY = PADDLE_START_Y;
-let p2PaddleY = PADDLE_START_Y;
-let p1Points = 0;
-let p2Points = 0;
+function Player() {
+	return {
+		points: 0,
+		paddle: {
+			y: PADDLE_START_Y,
+			setY: function (newY) {
+				const minPaddleY = 0;
+				const maxPaddleY = CANVAS_HEIGHT - PADDLE_HEIGHT;
+				this.y = coerceIn(newY, minPaddleY, maxPaddleY);
+			},
+		},
+	};
+}
 
-function coercePaddle(paddleY) {
+const p1 = Player();
+const p2 = Player();
+
+/*function coercePaddle(paddleY) {
 	const minPaddleY = 0;
 	const maxPaddleY = CANVAS_HEIGHT - PADDLE_HEIGHT;
 	return coerceIn(paddleY, minPaddleY, maxPaddleY);
-}
+}*/
 
 function movePaddles() {
 	if (p1Action === UP_ACTION) {
-		p1PaddleY = coercePaddle(p1PaddleY - PADDLE_STEP);
+		p1.paddle.setY(p1PaddleY - PADDLE_STEP);
 	} else if (p1Action === DOWN_ACTION) {
-		p1PaddleY = coercePaddle(p1PaddleY + PADDLE_STEP);
+		p1.paddle.setY(p1PaddleY + PADDLE_STEP);
 	}
 	if (p2Action === UP_ACTION && p2PaddleY >= 0) {
-		p2PaddleY = coercePaddle(p2PaddleY - PADDLE_STEP);
+		p2.paddle.setY(p2PaddleY - PADDLE_STEP);
 	} else if (p2Action === DOWN_ACTION) {
-		p2PaddleY = coercePaddle(p2PaddleY + PADDLE_STEP);
+		p2.paddle.setY(p2PaddleY + PADDLE_STEP);
 	}
 }
-
 
 function moveBall() {
 	if (ball.shouldBounceFromTopWall() || ball.shouldBounceFromBottomWall()) {
